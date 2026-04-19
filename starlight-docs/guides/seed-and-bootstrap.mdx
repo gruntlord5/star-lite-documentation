@@ -1,0 +1,48 @@
+---
+title: Seed & Bootstrap
+description: How Star-Lite Docs seeds default content on first boot and how to customize it.
+---
+
+Star-Lite Docs automatically creates the database schema and default content the first time your site receives a request.
+
+## How bootstrap works
+
+On every request, Star-Lite's middleware calls `ensurePagesCollection()`. This function:
+
+1. Checks a module-level flag — if the seed has already been applied, it returns immediately
+2. Loads any user seed via emdash's virtual seed module and merges it with the default seed
+3. Calls `applySeed()` to create the `pages` collection and its fields
+4. Creates the `docs-sidebar` menu only if it doesn't already exist
+
+The bootstrap is **idempotent** — existing collections, fields, and menus are never overwritten. Only missing pieces are added.
+
+:::note
+The middleware runs with `order: "pre"` so it executes **before** emdash's auth middleware. Without this, emdash would redirect unauthenticated requests to `/setup` and the bootstrap would never fire on a fresh install.
+
+On a cold database, the first request fails with "no such table" because emdash hasn't migrated yet. The second request succeeds. This is logged as `[star-lite-docs] bootstrap seed failed` then `applied default seed`.
+:::
+
+## Default seed
+
+The built-in seed (`src/seed.ts`) creates:
+
+- A **pages** collection with `title` (string, required, searchable) and `content` (portableText) fields
+- A **docs-sidebar** menu (empty items array)
+- A **welcome** page at slug `index` with a `docs.hero` block
+
+## Custom seed
+
+The `create-star-lite-docs` CLI writes a `.emdash/seed.json` file with starter content and sidebar links. emdash exposes this via `virtual:emdash/seed`, and the bootstrap merges it with the default seed:
+
+- `content` from the user seed **replaces** the default content
+- `menus` from the user seed **replaces** the default menus
+- Collections and fields always come from the default seed
+
+## Programmatic access
+
+```ts
+import { defaultSeed, ensurePagesCollection } from "star-lite-docs";
+```
+
+- `defaultSeed` — the `SeedFile` object shipped by the plugin (from `src/seed.ts`)
+- `ensurePagesCollection(db)` — the file-based bootstrap function (from `src/bootstrap.ts`). Note: the runtime middleware uses an inline version in the virtual module, not this export.

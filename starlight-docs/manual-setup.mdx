@@ -1,0 +1,80 @@
+---
+title: Add to an Existing Site
+description: Add Star-Lite Docs to an existing EmDash site.
+---
+
+## Install
+
+```bash
+bunx astro add star-lite-docs
+```
+
+This wires `starLiteDocs()` into your `astro.config.mjs`. If installing from GitHub instead of npm:
+
+```bash
+bun add github:gruntlord5/star-lite-docs
+```
+
+Then add the integration manually:
+
+```ts
+import { starLiteDocs } from "star-lite-docs";
+
+// add to your integrations array:
+starLiteDocs({ title: "My Docs" }),
+```
+
+Block components, the welcome page, and route conflict warnings are all handled automatically at build time.
+
+## Configuration
+
+```ts
+starLiteDocs({
+  title: "My Docs",
+
+  // Omit for menu-driven sidebar (editable from admin UI)
+  sidebar: [
+    {
+      label: "Guide",
+      items: [
+        { label: "Getting Started", link: "/getting-started" },
+        { label: "Installation", link: "/install" },
+      ],
+    },
+  ],
+
+  // Set to `false` to disable bundled Expressive Code
+  expressiveCode: { /* AstroExpressiveCodeOptions */ },
+});
+```
+
+## API
+
+```ts
+import {
+  starLiteDocs,        // Astro integration (blocks auto-registered at build)
+  starLiteBlocks,      // emdash plugin descriptor (only needed for advanced setups)
+  preprocessBlocks,    // PT normalizer (headings, tables, images, text → docs.html)
+  preprocessImages,    // image-only subset
+  loadSidebarFromMenu, // resolve emdash menu → SidebarConfig[]
+  ensurePagesCollection, // idempotent seed bootstrap
+  defaultSeed,         // the SeedFile shipped by the plugin
+  buildSidebar,        // build sidebar tree from flat config
+  markCurrent,         // mark the active sidebar item by slug
+} from "star-lite-docs";
+
+import type {
+  StarLiteDocsOptions,
+  StarLiteDocsConfig,
+  SidebarConfig,
+  SidebarEntry,
+  SidebarLink,
+  SidebarGroup,
+} from "star-lite-docs";
+```
+
+Astro components are available at subpath imports:
+
+```ts
+import DocsLayout from "star-lite-docs/layout";
+```

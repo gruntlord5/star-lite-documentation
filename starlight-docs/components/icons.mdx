@@ -1,0 +1,35 @@
+---
+title: Icons
+description: Display inline icons from the Star-Lite icon set.
+---
+
+The icon block renders an inline SVG icon from Star-Lite's built-in icon set (inherited from Starlight).
+
+## Block type
+
+`star-lite.icon`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | string | Icon name (see [Icons Reference](/reference/icons)) |
+| `label` | string | Accessible label for screen readers |
+| `color` | string | Icon color |
+| `size` | string | Icon size |
+
+## Usage
+
+Add an icon block from the admin block picker. Icons render inline and can be placed alongside text content.
+
+Icons are also used as properties in other block types:
+
+- **Hero actions** — the `icon` field in each action object
+- **Cards** — the `icon` field on `star-lite.card`
+- **Link buttons** — the `icon` field on `star-lite.linkButton`
+
+## Available icons
+
+Star-Lite includes 93 icons covering UI elements, actions, and brand logos. See the [Icons Reference](/reference/icons) for the full list.
+
+Common icons: `right-arrow`, `external`, `pencil`, `document`, `rocket`, `star`, `information`, `warning`, `error`, `github`, `discord`.

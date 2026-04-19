@@ -1,0 +1,54 @@
+---
+title: Using Components
+description: How to add and edit block components in Star-Lite Docs.
+---
+
+Star-Lite Docs ships 14 block types that cover common documentation patterns — from callout boxes and tabbed panels to file trees and code blocks.
+
+## Adding blocks
+
+### From the admin
+
+Navigate to `/_emdash/admin/content/pages/<id>` and use the block picker to add blocks to a page. Each block type has a form with labeled fields. When `starLiteBlocks()` is registered in your emdash config, all 14 Star-Lite block types appear in the picker.
+
+### From the page (block editor)
+
+With Edit mode on, hover over any block to reveal the **Edit** button. Click it to open the inline property editor. You can modify all fields and save directly from the page.
+
+### From markdown mode
+
+Click **Edit as MD** to edit the full page as markdown. Standard markdown elements (headings, paragraphs, code fences, lists) are converted to the appropriate blocks. Custom block types appear as `<!--ec:block ...-->` fences with JSON properties.
+
+## Block types
+
+### Content blocks
+
+| Block | Type | Description |
+| --- | --- | --- |
+| Hero | `docs.hero` | Splash hero with title, tagline, image, and action buttons |
+| Image | `docs.image` | Standalone image with src and alt |
+| HTML | `docs.html` | Raw HTML passthrough |
+| Code | `code` | Syntax-highlighted code (Expressive Code) |
+
+### Component blocks
+
+| Block | Type | Description |
+| --- | --- | --- |
+| [Tabs](/components/tabs) | `star-lite.tabs` | Tabbed content panels |
+| [Card](/components/cards) | `star-lite.card` | Content card with optional icon |
+| [Card Grid](/components/card-grids) | `star-lite.cardGrid` | Grid layout for cards |
+| [Link Card](/components/link-cards) | `star-lite.linkCard` | Navigation card with link |
+| [Aside](/components/asides) | `star-lite.aside` | Callout box (note, tip, caution, danger) |
+| [Badge](/components/badges) | `star-lite.badge` | Inline status badge |
+| [File Tree](/components/file-tree) | `star-lite.fileTree` | Directory tree display |
+| [Icon](/components/icons) | `star-lite.icon` | Inline icon |
+| [Link Button](/components/link-buttons) | `star-lite.linkButton` | Styled link as a button |
+| [Steps](/components/steps) | `star-lite.steps` | Numbered step-by-step instructions |
+
+## Visual editing
+
+Many blocks support inline visual editing. Elements with the `data-sl-edit` attribute become `contenteditable` when Edit mode is on. Changes are synced to the block's properties and saved when you click Save in the toolbar.
+
+## Full reference
+
+See the [Block Types Reference](/reference/block-types) for a complete list of fields for each block type.

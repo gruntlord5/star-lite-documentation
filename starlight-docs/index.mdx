@@ -1,0 +1,31 @@
+---
+title: Star-Lite Docs — CMS-powered documentation sites
+description: The Starlight documentation experience, powered by EmDash CMS. Edit docs visually in the browser.
+template: splash
+---
+
+import { CardGrid, Card } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+	<Card title="Visual Editing" icon="pencil">
+		Toggle Edit in the toolbar, click any text, and edit in place. A Save button appears — click it and your changes are live.
+	</Card>
+	<Card title="Block Editor" icon="puzzle">
+		Hover any block to reveal an Edit button. Opens an inline property editor for all fields — no admin panel needed.
+	</Card>
+	<Card title="Markdown Mode" icon="document">
+		Click "Edit as MD" to switch to a full-page markdown editor. All blocks round-trip as markdown. Same workflow as Starlight.
+	</Card>
+	<Card title="Zero Config" icon="rocket">
+		One integration, no schema setup. First request seeds the pages collection, sidebar menu, and welcome page automatically.
+	</Card>
+</CardGrid>
+
+## Features
+
+- **Starlight layout** — collapsible sidebar, table of contents, Ctrl+K search, dark/light/auto theme
+- **14 block types** — hero, tabs, cards, asides, steps, badges, file trees, icons, link buttons, code, images, and raw HTML
+- **Menu-driven sidebar** — edit navigation from the admin UI, no rebuild needed
+- **Expressive Code** — syntax highlighting with bundled Night Owl themes
+- **Copy Page MD** — one-click clipboard export of any page as markdown
+- **Deploy anywhere** — Local with SQLite, Docker, or Cloudflare Workers with D1 and R2

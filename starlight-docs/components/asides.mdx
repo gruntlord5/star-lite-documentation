@@ -1,0 +1,67 @@
+---
+title: Asides
+description: Display callout boxes for tips, notes, cautions, and warnings.
+---
+
+Asides (also called callouts or admonitions) display secondary information alongside the main content. They come in four variants with distinct colors and icons.
+
+## Block type
+
+`star-lite.aside`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `type` | string | `note`, `tip`, `caution`, or `danger` |
+| `title` | string | Custom title (defaults to the type name if empty) |
+| `content` | string | The callout body text |
+
+## Variants
+
+- **Note** (blue) — general supplementary information
+- **Tip** (purple) — helpful suggestions or best practices
+- **Caution** (yellow) — important caveats the reader should be aware of
+- **Danger** (red) — warnings about destructive or irreversible actions
+
+## Markdown mode
+
+In markdown mode, asides use the `:::` fence syntax:
+
+```markdown
+:::note
+This is a note.
+:::
+
+:::tip[Custom title]
+Tips can have custom titles.
+:::
+
+:::caution
+Be careful with this.
+:::
+
+:::danger
+This action cannot be undone.
+:::
+```
+
+The type goes after `:::` and an optional title can be placed in square brackets.
+
+## Example
+
+:::note
+This is a note aside. It displays general supplementary information.
+:::
+
+:::tip[Pro tip]
+You can use asides to highlight important information that readers might otherwise miss.
+:::
+
+:::caution
+Asides in markdown mode must have matching opening and closing `:::` fences.
+:::
+
+:::danger
+Deleting a page from the admin cannot be undone.
+:::

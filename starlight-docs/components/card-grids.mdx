@@ -1,0 +1,42 @@
+---
+title: Card Grids
+description: Arrange multiple cards in a responsive grid layout.
+---
+
+Card grids arrange multiple cards in a responsive column layout.
+
+## Block type
+
+`star-lite.cardGrid`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | string | Optional section ID for linking |
+| `cardsJson` | string | JSON array of card objects |
+
+## Card format
+
+Each card in the `cardsJson` array has the same fields as a standalone [Card](/components/cards):
+
+```json
+[
+  {
+    "title": "First Card",
+    "icon": "rocket",
+    "content": "Card body text."
+  },
+  {
+    "title": "Second Card",
+    "icon": "pencil",
+    "content": "Another card."
+  }
+]
+```
+
+## Usage
+
+Card grids are commonly used on landing pages or feature overview sections. The grid automatically adjusts the number of columns based on the viewport width.
+
+To edit a card grid, hover over it in Edit mode and click **Edit** to modify the JSON.

@@ -1,0 +1,62 @@
+---
+title: Sidebar Navigation
+description: Learn how to configure the sidebar in Star-Lite Docs.
+---
+
+Star-Lite Docs supports two sidebar modes: **menu-driven** (default) where the sidebar is editable from the admin UI, and **static** where you define it in your Astro config.
+
+## Menu-driven sidebar
+
+By default, the sidebar reads from the `docs-sidebar` emdash menu. This is created automatically on first boot.
+
+### Editing the sidebar
+
+Go to `/_emdash/admin/menus/docs-sidebar` to add, remove, and reorder sidebar links.
+
+- **Top-level items without children** become standalone links
+- **Top-level items with children** become collapsible groups
+- **Nested children** become links within their parent group
+
+### Example menu structure
+
+```
+docs-sidebar
+├── Getting Started → /getting-started
+├── Guides (group)
+│   ├── First Guide → /guides/first
+│   └── Second Guide → /guides/second
+└── Reference (group)
+    └── API → /reference/api
+```
+
+This renders a sidebar with "Getting Started" as a top-level link, then "Guides" and "Reference" as collapsible groups.
+
+:::tip
+Changes to the menu take effect immediately on the next page load — no rebuild needed. This is one of the main advantages of the menu-driven approach.
+:::
+
+## Static sidebar
+
+Pass a `sidebar` array to `starLiteDocs()` to use a fixed sidebar defined at build time:
+
+```ts
+starLiteDocs({
+  title: "My Docs",
+  sidebar: [
+    { label: "Getting Started", link: "/getting-started" },
+    {
+      label: "Guides",
+      items: [
+        { label: "First Guide", link: "/guides/first" },
+        { label: "Second Guide", link: "/guides/second" },
+      ],
+    },
+  ],
+});
+```
+
+When a static sidebar is provided, the `docs-sidebar` menu is ignored entirely. The sidebar is baked into the build via a virtual module.
+
+## Active page highlighting
+
+The current page is automatically highlighted in the sidebar. Star-Lite compares the current URL path against each sidebar link's `href` (with trailing slashes normalized) and marks the matching entry as active.

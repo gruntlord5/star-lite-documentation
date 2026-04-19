@@ -1,0 +1,111 @@
+---
+title: Configuration Reference
+description: Reference for all starLiteDocs() configuration options.
+---
+
+The `starLiteDocs()` integration accepts an options object. All fields are optional.
+
+## `title`
+
+**Type:** `string`
+**Default:** `"Documentation"`
+
+Fallback site title used in the browser tab and header. The live value from emdash's Settings > Site > Title takes precedence at request time.
+
+```ts
+starLiteDocs({ title: "My Docs" });
+```
+
+## `sidebar`
+
+**Type:** `SidebarConfig[]`
+**Default:** `undefined` (loads from `docs-sidebar` menu)
+
+Static sidebar configuration. When provided, the sidebar is baked into the build via a virtual module and the `docs-sidebar` menu is ignored.
+
+```ts
+starLiteDocs({
+  sidebar: [
+    { label: "Home", link: "/" },
+    {
+      label: "Guides",
+      items: [
+        { label: "Getting Started", link: "/getting-started" },
+        { label: "Advanced", link: "/guides/advanced" },
+      ],
+    },
+  ],
+});
+```
+
+Each item can be a link (`{ label, link }`) or a group (`{ label, items }`). Groups can be nested.
+
+## `expressiveCode`
+
+**Type:** `AstroExpressiveCodeOptions | false`
+**Default:** `undefined` (registered with Night Owl themes)
+
+Controls the bundled Expressive Code integration for syntax highlighting.
+
+- **Omit** — registers with Night Owl dark/light themes
+- **Pass an object** �� forwarded to `expressiveCode()`, overrides bundled themes
+- **Pass `false`** — not registered (add `expressiveCode()` yourself if needed)
+
+```ts
+// Custom themes
+starLiteDocs({
+  expressiveCode: {
+    themes: ["dracula", "github-light"],
+  },
+});
+
+// Disable
+starLiteDocs({ expressiveCode: false });
+```
+
+## Virtual modules
+
+The integration provides two virtual modules:
+
+- `virtual:star-lite-docs/config` — the resolved sidebar and site title:
+  ```ts
+  import { sidebar, siteTitle } from "virtual:star-lite-docs/config";
+  // sidebar: SidebarConfig[] | null (null = menu-driven mode)
+  // siteTitle: string
+  ```
+- `virtual:star-lite-docs/data` — runtime helpers (`getDb`, `getSiteSettings`, `ensurePagesCollection`, `loadSidebarFromMenu`) used by the middleware and catch-all route. These are inlined into the virtual module to avoid import issues with emdash's runtime internals.
+
+## Vite SSR configuration
+
+The integration adds `"star-lite-docs"` to `vite.ssr.noExternal` so Astro's `.astro` plugin processes the component files shipped from `node_modules`. Without this, Vite externalizes the package and `.astro` files fail to compile.
+
+## Cloudflare compatibility
+
+When the adapter is `@astrojs/cloudflare`, the integration adds an extra Vite plugin (`star-lite-docs-cf-deps`) that pre-bundles CJS dependencies for the SSR environment. This is needed because packages like `parse-numeric-range` (used by Expressive Code) use `module.exports`, which crashes in the workerd runtime without pre-bundling.
+
+## Block component registration
+
+A Vite `transform` plugin patches emdash's block component registry at build time to include Star-Lite's block components. This happens automatically — you don't need to configure it. The `starLiteBlocks()` plugin descriptor is only needed for the admin UI's block picker.
+
+## Middleware
+
+The integration registers pre-order middleware that runs `ensurePagesCollection()` on every request. This:
+
+- Runs **before** emdash's auth middleware (so bootstrap works even during initial setup)
+- Short-circuits after the first successful seed (module-level flag)
+- Fails silently on the first request of a cold database (emdash hasn't migrated yet)
+
+## Route injection
+
+The integration injects four routes:
+
+| Pattern | File | Description |
+| --- | --- | --- |
+| `/[...slug]` | `routes/page.astro` | Catch-all page renderer |
+| `/api/search` | `routes/search.ts` | Public search API |
+| `/api/get-markdown` | `routes/get-markdown.ts` | Markdown export (published pages only) |
+| `/api/drop-fts` | `routes/drop-fts.ts` | FTS index cleanup before saves |
+
+## Route conflict warnings
+
+At build time, the integration checks for `index.astro`, `[slug].astro`, or `[...slug].astro` in your `src/pages/` directory and warns if they would override Star-Lite's catch-all route.

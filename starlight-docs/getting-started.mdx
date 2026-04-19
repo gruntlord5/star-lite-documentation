@@ -1,0 +1,51 @@
+---
+title: Getting Started
+description: Create a new Star-Lite Docs site in minutes.
+---
+
+The [Starlight](https://starlight.astro.build/) documentation experience, powered by [EmDash CMS](https://github.com/emdash-cms/emdash). Edit docs visually in the browser — no MDX files, no Git commits, no rebuilds.
+
+## Get Started
+
+Install [Bun](https://bun.sh) if you don't have it:
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Then create your project:
+
+```bash
+bun create star-lite-docs
+```
+
+The CLI scaffolds your project and offers three deployment targets: **Local**, **Docker**, or **Cloudflare Workers** (with automatic D1/R2 provisioning and deploy).
+
+:::tip
+Star-Lite also works with any existing emdash site — just run `bunx astro add star-lite-docs`. Block components, the welcome page, and route conflict warnings are all handled automatically at build time.
+:::
+
+## Features
+
+- **Starlight layout** — collapsible sidebar, table of contents, Ctrl+K search, dark/light/auto theme
+- **14 block types** — hero, tabs, cards, asides, steps, badges, file trees, icons, link buttons, code, images, and raw HTML
+- **Zero config** — one integration, no schema setup. First request seeds the `pages` collection, sidebar menu, and welcome page
+- **Menu-driven sidebar** — edit navigation from the admin UI, no rebuild needed
+- **Expressive Code** — syntax highlighting with bundled Night Owl themes
+- **Copy Page MD** — one-click clipboard export of any page as markdown
+
+## How It Works
+
+- Content is stored as Portable Text in the `ec_pages` table — the database is the source of truth.
+- The `/[...slug]` catch-all route looks up a published page by slug, preprocesses blocks (images, headings with TOC anchors, tables, and standard text blocks are all converted to `docs.html`), and renders via emdash's `PortableText` with Star-Lite's block components.
+- On first boot, the middleware runs `applySeed` to create the `pages` collection, `docs-sidebar` menu, and a welcome page. This is idempotent — existing data is never overwritten.
+- The toolbar Save button is injected client-side via a `DOMContentLoaded` handler that watches the emdash toolbar's status area with a `MutationObserver`.
+- Block components use `data-sl-edit` attributes for inline contenteditable editing and `data-block-props` for the block edit form.
+
+## Next steps
+
+- **Deploy:** See [Deploy](/deploy) for Cloudflare Workers, Docker, and Node.js deployment
+- **Add to existing site:** See [Add to an Existing Site](/manual-setup) to install on an existing emdash project
+- **Authoring:** Learn the three editing modes in [Authoring Content](/guides/authoring-content)
+- **Components:** Discover the 14 block types in the [Components](/components/using-components) guide
+- **Customize:** Configure your site in [Customization](/guides/customization)

@@ -1,0 +1,36 @@
+---
+title: Steps
+description: Display numbered step-by-step instructions.
+---
+
+Steps render a numbered list with visual step indicators, ideal for tutorials and how-to guides.
+
+## Block type
+
+`star-lite.steps`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `start` | number | Starting step number (default: 1) |
+| `stepsJson` | string | JSON array of `{ content }` objects |
+
+## Format
+
+Each step has a `content` field with the step's text:
+
+```json
+[
+  { "content": "Install Star-Lite Docs with `bun create star-lite-docs`." },
+  { "content": "Choose your deployment target: Local, Docker, or Cloudflare." },
+  { "content": "Create your admin account at `/_emdash/admin/setup`." },
+  { "content": "Start creating pages from the admin UI." }
+]
+```
+
+## Usage
+
+Add a steps block from the admin block picker and enter the steps JSON. Each step is rendered with a numbered circle indicator and the content text.
+
+Steps are best used for sequential instructions where order matters — installation guides, setup procedures, or multi-part tutorials.

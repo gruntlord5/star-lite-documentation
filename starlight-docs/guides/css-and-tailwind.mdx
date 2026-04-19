@@ -1,0 +1,99 @@
+---
+title: CSS & Styling
+description: Customize the look of your Star-Lite Docs site with CSS custom properties.
+---
+
+Star-Lite Docs uses CSS custom properties (prefixed `sl-`) for theming. These are defined in `style/props.css` and can be overridden to customize the look of your site.
+
+## Color tokens
+
+Dark mode is the default. Light mode values are set under `:root[data-theme='light']`.
+
+### Dark mode defaults
+
+```css
+:root {
+  --sl-color-white: hsl(0, 0%, 100%);
+  --sl-color-gray-1: hsl(224, 20%, 94%);
+  --sl-color-gray-2: hsl(224, 6%, 77%);
+  --sl-color-gray-3: hsl(224, 6%, 56%);
+  --sl-color-gray-4: hsl(224, 7%, 36%);
+  --sl-color-gray-5: hsl(224, 10%, 23%);
+  --sl-color-gray-6: hsl(224, 14%, 16%);
+  --sl-color-black: hsl(224, 10%, 10%);
+
+  --sl-color-accent-low: hsl(224, 54%, 20%);
+  --sl-color-accent: hsl(224, 100%, 60%);
+  --sl-color-accent-high: hsl(224, 100%, 85%);
+
+  --sl-color-text: var(--sl-color-gray-2);
+  --sl-color-text-accent: var(--sl-color-accent-high);
+  --sl-color-bg: var(--sl-color-black);
+  --sl-color-bg-nav: var(--sl-color-gray-6);
+  --sl-color-bg-sidebar: var(--sl-color-gray-6);
+  --sl-color-hairline: var(--sl-color-gray-6);
+}
+```
+
+Semantic color tokens (`orange`, `green`, `blue`, `purple`, `red`) are also available via hue variables like `--sl-hue-orange: 41` with `low`, base, and `high` variants.
+
+## Typography
+
+```css
+:root {
+  --sl-text-2xs: 0.75rem;   /* 12px */
+  --sl-text-xs: 0.8125rem;  /* 13px */
+  --sl-text-sm: 0.875rem;   /* 14px */
+  --sl-text-base: 1rem;     /* 16px */
+  --sl-text-lg: 1.125rem;   /* 18px */
+  --sl-text-xl: 1.25rem;    /* 20px */
+  --sl-text-2xl: 1.5rem;    /* 24px */
+  --sl-text-3xl: 1.8125rem; /* 29px */
+  --sl-text-4xl: 2.1875rem; /* 35px */
+  --sl-text-5xl: 2.625rem;  /* 42px */
+  --sl-text-6xl: 4rem;      /* 64px */
+
+  --sl-line-height: 1.75;
+  --sl-line-height-headings: 1.2;
+}
+```
+
+Font families use system font stacks by default. Override with `--sl-font` (body) and `--sl-font-mono` (code).
+
+## Layout
+
+```css
+:root {
+  --sl-nav-height: 3.5rem;      /* 4rem at ≥50em */
+  --sl-sidebar-width: 18.75rem;
+  --sl-content-width: 45rem;
+  --sl-content-pad-x: 1rem;     /* 1.5rem at ≥72rem */
+}
+```
+
+## Overriding styles
+
+Override the `sl-*` custom properties to change the theme:
+
+```css
+:root {
+  --sl-color-accent-low: hsl(280, 54%, 20%);
+  --sl-color-accent: hsl(280, 100%, 60%);
+  --sl-color-accent-high: hsl(280, 100%, 85%);
+}
+```
+
+## Utility classes
+
+From `style/util.css`:
+
+- `.sl-hidden` — `display: none`
+- `.sl-flex` — `display: flex`
+- `.sl-block` — `display: block`
+- `.sr-only` — visually hidden, accessible to screen readers
+- Responsive variants: `.md:sl-hidden`, `.md:sl-flex`, `.lg:sl-hidden`, etc.
+- Theme variants: `.light:sl-hidden`, `.dark:sl-hidden`
+
+## Markdown content
+
+Content inside `.sl-markdown-content` gets automatic styles for headings, paragraphs, lists, tables, blockquotes, code blocks, and links. These are defined in `style/markdown.css`. Aside styles are in `style/asides.css`.

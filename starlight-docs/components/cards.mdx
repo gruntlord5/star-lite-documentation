@@ -1,0 +1,42 @@
+---
+title: Cards
+description: Display content in styled card boxes with optional icons.
+---
+
+Cards group related content in a visually distinct box with an optional icon and color accent.
+
+## Block type
+
+`star-lite.card`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | string | Card heading |
+| `icon` | string | Icon name from the [icon set](/reference/icons) |
+| `color` | string | Accent color: `purple`, `orange`, `green`, `red`, `blue` |
+| `content` | string | Card body text |
+
+## Usage
+
+Add a card from the admin block picker. The title and icon appear at the top of the card, with the content below. Cards are useful for highlighting features, summarizing concepts, or creating visual groupings.
+
+Cards can be placed individually or inside a [Card Grid](/components/card-grids) for multi-column layouts.
+
+## Example
+
+A card with an icon looks like this:
+
+```json
+{
+  "_type": "star-lite.card",
+  "title": "Visual Editing",
+  "icon": "pencil",
+  "content": "Click any text on the page to edit it in place."
+}
+```
+
+## Visual editing
+
+With Edit mode on, hover over a card and click **Edit** to modify its title, icon, color, and content inline.

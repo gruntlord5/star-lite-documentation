@@ -1,0 +1,42 @@
+---
+title: Link Buttons
+description: Display styled links as pill-shaped buttons.
+---
+
+Link buttons render links as visually prominent pill-shaped buttons, commonly used for calls to action.
+
+## Block type
+
+`star-lite.linkButton`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `text` | string | Button label |
+| `href` | string | Link URL |
+| `icon` | string | Optional icon name from the [icon set](/reference/icons) |
+| `iconPlacement` | string | `start` or `end` (default: `end`) |
+| `variant` | string | `primary`, `secondary`, or `minimal` |
+
+## Variants
+
+- **Primary** — filled background with accent color, white text
+- **Secondary** — bordered outline, accent text
+- **Minimal** — text-only with no border or background
+
+## Usage
+
+Link buttons are useful for navigation prompts, download links, or any action you want to draw attention to. They're commonly placed after introductory text or in hero sections.
+
+## Example
+
+```json
+{
+  "_type": "star-lite.linkButton",
+  "text": "Get Started",
+  "href": "/getting-started",
+  "icon": "right-arrow",
+  "variant": "primary"
+}
+```

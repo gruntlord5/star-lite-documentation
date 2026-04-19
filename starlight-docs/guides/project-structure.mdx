@@ -1,0 +1,84 @@
+---
+title: Project Structure
+description: Learn how a Star-Lite Docs project is organized.
+---
+
+A Star-Lite Docs project is a standard Astro project with emdash and star-lite-docs as integrations. Here's the typical layout:
+
+## Node / Docker project
+
+```
+my-docs/
+├── astro.config.mjs     # Astro config with starLiteDocs() + emdash()
+├── package.json
+├── tsconfig.json
+├── .emdash/
+│   └── seed.json        # Optional custom seed (pages, menus)
+├── public/
+│   └── houston.webp     # Auto-copied by the integration
+├── data.db              # SQLite database (created at runtime)
+├── uploads/             # Uploaded media files
+├── Dockerfile           # Docker deployment (if scaffolded)
+└── src/
+    └── pages/
+        └── .gitkeep     # Empty — routes are injected by the integration
+```
+
+## Cloudflare Workers project
+
+```
+my-docs/
+├── astro.config.mjs     # starLiteDocs() + emdash() with d1/r2
+├── package.json
+├── tsconfig.json
+├── wrangler.jsonc       # D1 database and R2 bucket bindings
+├── worker-configuration.d.ts
+├── .emdash/
+│   └── seed.json        # Optional custom seed
+├── public/
+│   └── houston.webp
+└── src/
+    └── pages/
+        └── .gitkeep
+```
+
+## Key files
+
+### `astro.config.mjs`
+
+The main configuration file. This is where `starLiteDocs()` and `emdash()` are registered:
+
+```ts
+import { starLiteDocs, starLiteBlocks } from "star-lite-docs";
+
+export default defineConfig({
+  output: "server",
+  integrations: [
+    starLiteDocs({ title: "My Docs" }),
+    emdash({
+      database: /* sqlite() or d1() */,
+      storage: /* local() or r2() */,
+      plugins: [starLiteBlocks()],
+    }),
+  ],
+});
+```
+
+### `.emdash/seed.json`
+
+Optional. Overrides the default seed content and menus. See [Seed & Bootstrap](/guides/seed-and-bootstrap).
+
+### `public/`
+
+Static assets. `houston.webp` is auto-copied here by the integration on first build. Add your own images, favicons, etc.
+
+### `src/pages/`
+
+Usually empty. Star-Lite injects its routes via the integration — you don't need to create page files. If you add your own route files here (e.g. `index.astro`), the integration will warn about conflicts.
+
+### Database
+
+- **Node/Docker:** `data.db` (SQLite file in the project root)
+- **Cloudflare:** D1 database (configured in `wrangler.jsonc`)
+
+All content, users, menus, and settings are stored here.

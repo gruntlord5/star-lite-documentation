@@ -1,0 +1,47 @@
+---
+title: Icons Reference
+description: All available icons in Star-Lite Docs.
+---
+
+Star-Lite Docs includes Starlight's icon set. These icons can be used in `star-lite.icon` blocks, hero action buttons, card icons, and link button icons.
+
+## Available icons
+
+### UI icons
+
+`up-caret`, `down-caret`, `right-caret`, `left-caret`, `up-arrow`, `down-arrow`, `right-arrow`, `left-arrow`, `bars`, `close`, `forward-slash`, `magnifier`, `moon`, `sun`, `translate`
+
+### Action icons
+
+`pencil`, `pen`, `document`, `add-document`, `setting`, `external`, `download`, `cloud-download`, `laptop`, `open-book`, `information`, `comment`, `list-format`, `approve-check`, `approve-check-circle`, `error`, `warning`, `heart`, `star`, `phone`, `email`, `random`, `rss`
+
+### Brand icons
+
+`astro`, `starlight`, `alpine`, `apple`, `azureDevOps`, `backstage`, `biome`, `bitbucket`, `blueSky`, `bun`, `chrome`, `cloudflare`, `codePen`, `codeberg`, `confluence`, `deno`, `discord`, `discourse`, `edge`, `facebook`, `farcaster`, `figma`, `firefox`, `github`, `gitlab`, `gitter`, `hackerOne`, `homebrew`, `instagram`, `jetbrains`, `jira`, `jsr`, `linkedin`, `linux`, `mastodon`, `matrix`, `mdx`, `microsoftTeams`, `netlify`, `nix`, `node`, `nostr`, `npm`, `openCollective`, `patreon`, `pinterest`, `pkl`, `pnpm`, `puzzle`, `reddit`, `rocket`, `safari`, `signal`, `sketch`, `slack`, `sourcehut`, `stackOverflow`, `storybook`, `substack`, `telegram`, `threads`, `tiktok`, `twitch`, `twitter`, `vercel`, `vim`, `vscode`, `x.com`, `youtube`, `zed`, `zulip`
+
+## Usage in blocks
+
+### Icon block
+
+The `star-lite.icon` block renders a standalone icon:
+
+| Field | Value |
+| --- | --- |
+| `name` | Icon name from the list above |
+| `label` | Accessible label text |
+| `size` | Icon size |
+
+### Hero actions
+
+In `docs.hero` blocks, the `actionsJson` field supports an `icon` property on each action:
+
+```json
+[
+  { "text": "Get Started", "link": "/getting-started", "icon": "right-arrow", "variant": "primary" },
+  { "text": "GitHub", "link": "https://github.com/...", "icon": "github", "variant": "secondary" }
+]
+```
+
+### Card and link button icons
+
+The `star-lite.card` and `star-lite.linkButton` blocks both accept an `icon` field with any icon name from the list above.

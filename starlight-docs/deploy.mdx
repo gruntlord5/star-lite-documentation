@@ -1,0 +1,34 @@
+---
+title: Deploy
+description: Deploy your Star-Lite Docs site to production.
+---
+
+## Cloudflare Workers
+
+The CLI handles everything — D1, R2, deploy, admin user creation, and seed content:
+
+```bash
+bun create star-lite-docs   # choose Cloudflare Workers → Start now
+```
+
+## Docker
+
+```bash
+bun create star-lite-docs   # choose Docker → Start now
+```
+
+Or manually:
+
+```bash
+docker build -t <project-name> .
+docker run -d --restart unless-stopped -p 4321:4321 \
+  -v <project-name>-data:/app/data \
+  -v <project-name>-uploads:/app/uploads \
+  <project-name>
+```
+
+## Node.js
+
+```bash
+bun create star-lite-docs   # choose Local development → Start now
+```

@@ -1,0 +1,39 @@
+---
+title: File Tree
+description: Display file and directory structures.
+---
+
+File trees render directory structures with file-type icons, indentation, and visual hierarchy.
+
+## Block type
+
+`star-lite.fileTree`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `treeHtml` | string | Tree content as indented list text |
+
+## Format
+
+The tree content uses a dash-indented list format:
+
+```
+- src/
+  - pages/
+    - index.astro
+    - about.astro
+  - components/
+    - Header.astro
+- package.json
+- astro.config.mjs
+```
+
+Entries ending with `/` are rendered as directories (with folder icons). Other entries are rendered as files with icons based on their extension.
+
+## Usage
+
+Add a file tree from the admin block picker and enter the tree content in the `treeHtml` field. The indentation determines nesting depth.
+
+File trees are useful for explaining project structure, showing expected directory layouts, or illustrating where files should be placed.

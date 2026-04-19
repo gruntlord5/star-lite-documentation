@@ -1,0 +1,259 @@
+diff --git a/src/astro/routes/api/auth/oauth/[provider]/callback.ts b/src/astro/routes/api/auth/oauth/[provider]/callback.ts
+index f7e7cc311773f779be89e9568abe0de5a59c136f..edac4ee231c31faf2464b11c31c7a2bb9de48908 100644
+--- a/src/astro/routes/api/auth/oauth/[provider]/callback.ts
++++ b/src/astro/routes/api/auth/oauth/[provider]/callback.ts
+@@ -22,9 +22,9 @@ import { finalizeSetup } from "#api/setup-complete.js";
+ import { createOAuthStateStore } from "#auth/oauth-state-store.js";
+ import { OptionsRepository } from "#db/repositories/options.js";
+ 
+-type ProviderName = "github" | "google";
++type ProviderName = "github" | "google" | "discord";
+ 
+-const VALID_PROVIDERS = new Set<string>(["github", "google"]);
++const VALID_PROVIDERS = new Set<string>(["github", "google", "discord"]);
+ 
+ function isValidProvider(provider: string): provider is ProviderName {
+ 	return VALID_PROVIDERS.has(provider);
+@@ -73,9 +73,39 @@ function getOAuthConfig(env: Record<string, unknown>): OAuthConsumerConfig["prov
+ 		};
+ 	}
+ 
++	// Discord
++	const discordClientId = envString(env, "EMDASH_OAUTH_DISCORD_CLIENT_ID", "DISCORD_CLIENT_ID");
++	const discordClientSecret = envString(env, "EMDASH_OAUTH_DISCORD_CLIENT_SECRET", "DISCORD_CLIENT_SECRET");
++	if (discordClientId && discordClientSecret) {
++		providers.discord = {
++			clientId: discordClientId,
++			clientSecret: discordClientSecret,
++			guildId: envString(env, "EMDASH_OAUTH_DISCORD_GUILD_ID", "DISCORD_GUILD_ID"),
++		} as any;
++	}
++
+ 	return providers;
+ }
+ 
++/** Overlay DB-stored OAuth credentials onto env-based config */
++async function applyDbOAuthConfig(providers: OAuthConsumerConfig["providers"], db: any): Promise<void> {
++	try {
++		const rows = await db.selectFrom("options").select(["name", "value"]).where((eb: any) => eb.or([eb("name", "like", "site:oauth%"), eb("name", "=", "site:discordGuildId"), eb("name", "=", "site:discordDefaultRole")])).execute();
++		const opts: Record<string, any> = {};
++		for (const r of rows) { try { opts[r.name.replace("site:", "")] = JSON.parse(r.value); } catch {} }
++		for (const p of ["github", "google", "discord"] as const) {
++			const id = opts[`oauth${p.charAt(0).toUpperCase() + p.slice(1)}ClientId`];
++			const secret = opts[`oauth${p.charAt(0).toUpperCase() + p.slice(1)}ClientSecret`];
++			if (id && secret) {
++				providers[p] = { clientId: id, clientSecret: secret } as any;
++				if (p === "discord" && opts.discordGuildId) {
++					(providers.discord as any).guildId = opts.discordGuildId;
++				}
++			}
++		}
++	} catch {}
++}
++
+ export const GET: APIRoute = async ({ params, request, locals, session, redirect }) => {
+ 	const { emdash } = locals;
+ 	const provider = params.provider;
+@@ -115,12 +145,16 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 	}
+ 
+ 	try {
+-		// Get OAuth providers from environment
+-		// eslint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- locals.runtime is injected by the Cloudflare adapter at runtime; not declared on App.Locals since the adapter is optional
+-		const runtimeLocals = locals as unknown as { runtime?: { env?: Record<string, unknown> } };
+-		// eslint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- import.meta.env is typed as ImportMetaEnv but we need Record<string, unknown> for getOAuthConfig
+-		const env = runtimeLocals.runtime?.env ?? (import.meta.env as Record<string, unknown>);
++		// Get OAuth providers from environment (Astro v6: locals.runtime.env removed, use cloudflare:workers)
++		let env: Record<string, unknown>;
++		try {
++			const { env: cfEnv } = await import("cloudflare:workers");
++			env = cfEnv as Record<string, unknown>;
++		} catch {
++			env = import.meta.env as Record<string, unknown>;
++		}
+ 		const providers = getOAuthConfig(env);
++		await applyDbOAuthConfig(providers, emdash.db);
+ 
+ 		if (!providers[provider]) {
+ 			return redirect(
+@@ -131,19 +165,36 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 		const adapter = createKyselyAdapter(emdash.db);
+ 		const stateStore = createOAuthStateStore(emdash.db);
+ 
++		let origin = getPublicOrigin(url, emdash?.config);
++		try {
++			const siteUrlRow = await emdash.db.selectFrom("options").select("value").where("name", "=", "emdash:site_url").executeTakeFirst();
++			if (siteUrlRow?.value) origin = JSON.parse(siteUrlRow.value);
++		} catch {}
+ 		const config: OAuthConsumerConfig = {
+-			baseUrl: `${getPublicOrigin(url, emdash?.config)}/_emdash`,
++			baseUrl: `${origin}/_emdash`,
+ 			providers,
+ 			canSelfSignup: async (email: string) => {
+ 				// During setup: first user becomes admin.
+-				// Check setup_complete flag instead of countUsers() to avoid
+-				// a TOCTOU race where concurrent callbacks both see 0 users.
+ 				const options = new OptionsRepository(emdash.db);
+ 				const setupComplete = await options.get("emdash:setup_complete");
+ 				if (setupComplete !== true && setupComplete !== "true") {
+ 					return { allowed: true, role: Role.ADMIN };
+ 				}
+ 
++				// Discord with guild ID: guild membership is sufficient, skip domain check
++				if (provider === "discord" && providers.discord && "guildId" in providers.discord && (providers.discord as any).guildId) {
++					let discordRole: RoleLevel = Role.CONTRIBUTOR;
++					try {
++						const roleRow = await emdash.db.selectFrom("options").select("value").where("name", "=", "site:discordDefaultRole").executeTakeFirst();
++						if (roleRow?.value) {
++							const level = parseInt(typeof roleRow.value === "string" && roleRow.value.startsWith('"') ? JSON.parse(roleRow.value) : roleRow.value, 10);
++							const roleMap: Record<number, RoleLevel> = { 50: Role.ADMIN, 40: Role.EDITOR, 30: Role.AUTHOR, 20: Role.CONTRIBUTOR, 10: Role.SUBSCRIBER };
++							if (roleMap[level]) discordRole = roleMap[level];
++						}
++					} catch {}
++					return { allowed: true, role: discordRole };
++				}
++
+ 				// Extract domain from email
+ 				const domain = email.split("@")[1]?.toLowerCase();
+ 				if (!domain) {
+@@ -162,7 +213,6 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 					return null;
+ 				}
+ 
+-				// Map the stored role level to the Role enum
+ 				const roleLevel = entry.default_role;
+ 				const roleMap: Record<number, RoleLevel> = {
+ 					50: Role.ADMIN,
+@@ -172,11 +222,6 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 					10: Role.SUBSCRIBER,
+ 				};
+ 				const role = roleMap[roleLevel] ?? Role.CONTRIBUTOR;
+-				if (!roleMap[roleLevel]) {
+-					console.warn(
+-						`[oauth] Unknown role level ${roleLevel} for domain ${domain}, defaulting to CONTRIBUTOR`,
+-					);
+-				}
+ 
+ 				return { allowed: true, role };
+ 			},
+@@ -187,7 +232,6 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 		const user = await handleOAuthCallback(config, adapter, provider, code, state, stateStore);
+ 		const isFirstUser = setupCompleteBefore !== true && setupCompleteBefore !== "true";
+ 
+-		// Finalize setup outside the transaction (idempotent, safe if two callbacks race).
+ 		if (isFirstUser) {
+ 			await finalizeSetup(emdash.db);
+ 			console.log(`[oauth] Setup complete: created admin user via ${provider} (${user.email})`);
+@@ -209,7 +253,6 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 		if (callbackError instanceof OAuthError) {
+ 			errorCode = callbackError.code;
+ 
+-			// Map all error codes to user-friendly messages (never expose raw error.message)
+ 			switch (callbackError.code) {
+ 				case "invalid_state":
+ 					message = "OAuth session expired or invalid. Please try again.";
+@@ -231,7 +274,6 @@ export const GET: APIRoute = async ({ params, request, locals, session, redirect
+ 					break;
+ 			}
+ 		}
+-		// For generic errors, keep the default "Authentication failed" message
+ 
+ 		return redirect(
+ 			`/_emdash/admin/login?error=${errorCode}&message=${encodeURIComponent(message)}`,
+diff --git a/src/astro/routes/api/auth/oauth/[provider].ts b/src/astro/routes/api/auth/oauth/[provider].ts
+index 0d7d8fa63c3283a966b9e5dc4cae489e3058b183..9c59f170cac1c020c9a8cb9947746b241560c76f 100644
+--- a/src/astro/routes/api/auth/oauth/[provider].ts
++++ b/src/astro/routes/api/auth/oauth/[provider].ts
+@@ -13,9 +13,9 @@ import { createAuthorizationUrl, type OAuthConsumerConfig } from "@emdash-cms/au
+ import { getPublicOrigin } from "#api/public-url.js";
+ import { createOAuthStateStore } from "#auth/oauth-state-store.js";
+ 
+-type ProviderName = "github" | "google";
++type ProviderName = "github" | "google" | "discord";
+ 
+-const VALID_PROVIDERS = new Set<string>(["github", "google"]);
++const VALID_PROVIDERS = new Set<string>(["github", "google", "discord"]);
+ 
+ function isValidProvider(provider: string): provider is ProviderName {
+ 	return VALID_PROVIDERS.has(provider);
+@@ -64,9 +64,42 @@ function getOAuthConfig(env: Record<string, unknown>): OAuthConsumerConfig["prov
+ 		};
+ 	}
+ 
++	// Discord
++	const discordClientId = envString(env, "EMDASH_OAUTH_DISCORD_CLIENT_ID", "DISCORD_CLIENT_ID");
++	const discordClientSecret = envString(env, "EMDASH_OAUTH_DISCORD_CLIENT_SECRET", "DISCORD_CLIENT_SECRET");
++	if (discordClientId && discordClientSecret) {
++		providers.discord = {
++			clientId: discordClientId,
++			clientSecret: discordClientSecret,
++			guildId: envString(env, "EMDASH_OAUTH_DISCORD_GUILD_ID", "DISCORD_GUILD_ID"),
++		} as any;
++	}
++
+ 	return providers;
+ }
+ 
++/** Overlay DB-stored OAuth config on top of env-based config */
++async function applyDbOAuthConfig(providers: OAuthConsumerConfig["providers"], db: any) {
++	try {
++		const rows = await db.selectFrom("options").select(["name", "value"]).where((eb: any) => eb.or([eb("name", "like", "site:oauth%"), eb("name", "=", "site:discordGuildId"), eb("name", "=", "site:discordDefaultRole")])).execute();
++		const opts: Record<string, string> = {};
++		for (const r of rows) {
++			const v = r.value;
++			opts[r.name.replace("site:", "")] = typeof v === "string" && v.startsWith('"') ? JSON.parse(v) : v;
++		}
++		for (const p of ["github", "google", "discord"] as const) {
++			const id = opts[`oauth${p.charAt(0).toUpperCase() + p.slice(1)}ClientId`];
++			const secret = opts[`oauth${p.charAt(0).toUpperCase() + p.slice(1)}ClientSecret`];
++			if (id && secret) {
++				providers[p] = { clientId: id, clientSecret: secret } as any;
++				if (p === "discord" && opts.discordGuildId) {
++					(providers.discord as any).guildId = opts.discordGuildId;
++				}
++			}
++		}
++	} catch {}
++}
++
+ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
+ 	const { emdash } = locals;
+ 	const provider = params.provider;
+@@ -93,13 +126,16 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
+ 	try {
+ 		const url = new URL(request.url);
+ 
+-		// Get OAuth providers from environment
+-		// Access via locals.runtime for Cloudflare, or import.meta.env for Node
+-		// eslint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- locals.runtime is injected by the Cloudflare adapter at runtime; not declared on App.Locals since the adapter is optional
+-		const runtimeLocals = locals as unknown as { runtime?: { env?: Record<string, unknown> } };
+-		// eslint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- import.meta.env is typed as ImportMetaEnv but we need Record<string, unknown> for getOAuthConfig
+-		const env = runtimeLocals.runtime?.env ?? (import.meta.env as Record<string, unknown>);
++		// Get OAuth providers from environment (Astro v6: locals.runtime.env removed, use cloudflare:workers)
++		let env: Record<string, unknown>;
++		try {
++			const { env: cfEnv } = await import("cloudflare:workers");
++			env = cfEnv as Record<string, unknown>;
++		} catch {
++			env = import.meta.env as Record<string, unknown>;
++		}
+ 		const providers = getOAuthConfig(env);
++		await applyDbOAuthConfig(providers, emdash.db);
+ 
+ 		if (!providers[provider]) {
+ 			return redirect(
+@@ -107,8 +143,13 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
+ 			);
+ 		}
+ 
++		let origin = getPublicOrigin(url, emdash?.config);
++		try {
++			const siteUrlRow = await emdash.db.selectFrom("options").select("value").where("name", "=", "emdash:site_url").executeTakeFirst();
++			if (siteUrlRow?.value) origin = JSON.parse(siteUrlRow.value);
++		} catch {}
+ 		const config: OAuthConsumerConfig = {
+-			baseUrl: `${getPublicOrigin(url, emdash?.config)}/_emdash`,
++			baseUrl: `${origin}/_emdash`,
+ 			providers,
+ 		};
+ 

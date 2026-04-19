@@ -1,0 +1,64 @@
+---
+title: Customization
+description: Configure your Star-Lite Docs site.
+---
+
+Star-Lite Docs is configured through the `starLiteDocs()` integration in your `astro.config.mjs`.
+
+## Site title
+
+```ts
+starLiteDocs({
+  title: "My Docs",
+});
+```
+
+This is the fallback title. If you set a site title in the emdash admin (Settings > Site > Title), that takes precedence on every request — no rebuild needed.
+
+## Sidebar
+
+By default, the sidebar is loaded from the `docs-sidebar` emdash menu at request time. To use a static sidebar instead, pass a `sidebar` array:
+
+```ts
+starLiteDocs({
+  sidebar: [
+    { label: "Home", link: "/" },
+    {
+      label: "Guides",
+      items: [
+        { label: "Getting Started", link: "/getting-started" },
+      ],
+    },
+  ],
+});
+```
+
+See [Sidebar Navigation](/guides/sidebar) for details.
+
+## Expressive Code
+
+Star-Lite bundles [Expressive Code](https://expressive-code.com/) with Night Owl dark/light themes for syntax highlighting. You can customize it or disable it:
+
+```ts
+// Custom Expressive Code options
+starLiteDocs({
+  expressiveCode: {
+    themes: ["github-dark", "github-light"],
+  },
+});
+
+// Disable entirely (use your own)
+starLiteDocs({
+  expressiveCode: false,
+});
+```
+
+When set to `false`, the integration skips registering `astro-expressive-code`. You can then add it yourself with your own configuration.
+
+## Splash pages
+
+When a page's first block is a `docs.hero`, the layout automatically switches to splash mode: the sidebar and table of contents are hidden, and the content area is widened. This is used for the welcome page.
+
+## Theme
+
+Star-Lite supports dark, light, and auto (system preference) themes via the theme selector in the page header. The theme uses CSS custom properties prefixed with `sl-` — see [CSS & Styling](/guides/css-and-tailwind) for customization.

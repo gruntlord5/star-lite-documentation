@@ -1,0 +1,54 @@
+---
+title: Pages
+description: Learn how pages work in Star-Lite Docs.
+---
+
+Pages in Star-Lite Docs are stored as rows in the `ec_pages` database table. Each page has a title, slug, content (Portable Text blocks), and a publication status.
+
+## Creating pages
+
+Go to `/_emdash/admin/content/pages/new` to create a new page. Fill in:
+
+- **Title** — displayed in the browser tab and as a heading
+- **Slug** — the URL path (e.g. `getting-started` becomes `/getting-started`)
+- **Content** — add blocks using the block picker
+
+Click **Publish** to make the page publicly visible.
+
+## Slugs
+
+The slug determines the public URL. A page with slug `guides/first` is accessible at `/guides/first`.
+
+The special slug `index` maps to the site root (`/`).
+
+### Nested slugs
+
+Slugs can contain slashes to create logical grouping: `reference/api`, `guides/authoring`. These are purely URL-based — there's no directory structure in the database.
+
+### Friendly redirects
+
+If someone visits `/pages/getting-started` or `/posts/getting-started`, Star-Lite automatically strips the `pages/`, `page/`, `posts/`, or `post/` prefix and redirects (301) to `/getting-started` if that page exists.
+
+## Publication status
+
+The catch-all route only renders pages where `status = "published"` and `deleted_at IS NULL`. Unpublished drafts return a 404 on the public site.
+
+## Empty-state homepage
+
+When no page with slug `index` exists, the site root shows a themed splash page with Houston (the Starlight mascot) and links to create your first page and edit the sidebar. This is a real `DocsLayout` render with a 404 status — not a blank error page.
+
+## Catch-all route
+
+Star-Lite injects a `/[...slug]` route that:
+
+1. Looks up a published page by slug
+2. Preprocesses blocks (headings get TOC anchors, images get normalized, tables get converted to HTML)
+3. Renders via `DocsLayout` with the sidebar, TOC, and theme
+
+If no page matches, it returns a 404 with a styled "Page not found" message inside the docs layout.
+
+## Site title
+
+The page title in the browser tab follows the pattern: `Page Title | Site Title`.
+
+The site title is resolved at request time: emdash's Settings > Site > Title takes precedence, falling back to the `title` option passed to `starLiteDocs()`. This means you can rename your site from the admin without redeploying.

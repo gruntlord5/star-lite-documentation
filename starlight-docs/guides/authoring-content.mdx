@@ -1,0 +1,85 @@
+---
+title: Authoring Content
+description: Learn the three editing modes in Star-Lite Docs.
+---
+
+Star-Lite Docs offers three ways to edit content. All require logging in at `/_emdash/admin/setup` and toggling Edit mode in the toolbar.
+
+## Visual editing
+
+With Edit mode on, click any text on the page to edit it in place. Text elements use `contenteditable` — just type and your changes appear immediately. A **Save** button appears in the toolbar when you have unsaved changes.
+
+Visual editing works on any element with the `data-sl-edit` attribute. Most block types support inline editing for their primary text fields (titles, taglines, content).
+
+## Block editor
+
+Hover over any block to reveal an **Edit** button in the top-right corner. Clicking it opens an inline property editor showing all the block's fields — titles, URLs, JSON configuration, and more.
+
+Make your changes in the form and click **Save**. The form writes back to the block's `data-block-props` and triggers a save to the API.
+
+This is the best way to edit structured fields like hero actions, tab configurations, or link card URLs that aren't directly visible as text on the page.
+
+## Markdown mode
+
+Click **Edit as MD** in the page header to switch to a full-page markdown editor. The entire page content is serialized to markdown using emdash's `portableTextToMarkdown`.
+
+Custom block types (hero, cards, tabs, etc.) appear as `<!--ec:block ...-->` fences in the markdown. You can edit the JSON inside these fences or leave them alone — they round-trip cleanly on save.
+
+Click **Save** to convert the markdown back to Portable Text and publish. Click **Cancel** to return to the normal view without saving.
+
+## Copy Page MD
+
+The **Copy MD** button in the page header copies the current page as markdown to your clipboard. This is useful for migrating content out of the CMS or sharing page content as plain text.
+
+## Markdown syntax
+
+Text blocks support standard markdown formatting:
+
+- **Bold** with `**text**`
+- *Italic* with `*text*`
+- `Inline code` with backticks
+- [Links](https://example.com) with `[text](url)`
+- ~~Strikethrough~~ with `~~text~~`
+
+### Headings
+
+Headings are automatically converted to HTML with `id` attributes for table of contents anchors. The TOC on the right side of the page is built from h2 and h3 headings.
+
+### Code blocks
+
+Fenced code blocks with a language identifier are rendered by Expressive Code with Night Owl syntax themes:
+
+```ts
+const greeting = "Hello, Star-Lite!";
+```
+
+### Images
+
+Standalone markdown images (`![alt](url)`) are automatically converted to editable `docs.image` blocks during preprocessing.
+
+### Tables
+
+Markdown tables are converted to HTML tables during preprocessing:
+
+| Feature | Status |
+| --- | --- |
+| Visual editing | Supported |
+| Block editor | Supported |
+| Markdown mode | Supported |
+
+### Horizontal rules
+
+A line containing only `---` renders as a horizontal rule.
+
+## How saving works
+
+Both visual editing and block editing save through the same flow:
+
+1. The client calls `POST /api/drop-fts` to remove FTS indexes (prevents corruption during writes)
+2. A `PUT` to `/_emdash/api/content/pages/:id` updates the page content
+3. A `POST` to `/_emdash/api/content/pages/:id/publish` publishes the draft
+4. The page reloads to show the updated content
+
+:::caution
+emdash returns HTTP 200 with `{ success: false }` on failed writes, not a 4xx status. The save handler checks both `res.ok` and `body.success` to detect failures correctly.
+:::

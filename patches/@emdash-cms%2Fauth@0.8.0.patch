@@ -1,0 +1,34 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 14335b55119d1af758489080ad345c87a6acfb8e..13d75818822dfbbc5bef48431cc1e14ce2814e0b 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -3,6 +3,13 @@ import { S as validateScopes, _ as generateTokenWithHash, a as generateRegistrat
+ import "./passkey/index.mjs";
+ import { fetchGitHubEmail, github } from "./oauth/providers/github.mjs";
+ import { google } from "./oauth/providers/google.mjs";
++import { z as z2 } from "zod";
++
++// Inlined Discord provider (bun patches cannot create new files)
++const discordUserSchema = z2.object({ id: z2.string(), username: z2.string(), global_name: z2.string().nullable(), email: z2.string().nullable(), verified: z2.boolean().optional(), avatar: z2.string().nullable() });
++const discord = { name: "discord", authorizeUrl: "https://discord.com/oauth2/authorize?prompt=none", tokenUrl: "https://discord.com/api/oauth2/token", userInfoUrl: "https://discord.com/api/users/@me", scopes: ["identify", "email", "guilds"], parseProfile(data) { const user = discordUserSchema.parse(data); return { id: user.id, email: user.email || "", name: user.global_name || user.username, avatarUrl: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : null, emailVerified: user.verified ?? false }; } };
++async function checkDiscordGuild(accessToken, guildId) { const response = await fetch("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${accessToken}`, "User-Agent": "EmDash-CMS" } }); if (!response.ok) return false; const guilds = z2.array(z2.object({ id: z2.string() })).parse(await response.json()); return guilds.some((g) => g.id === guildId); }
++
+ import { z } from "zod";
+ import { sha256 } from "@oslojs/crypto/sha2";
+ import { encodeBase64urlNoPadding } from "@oslojs/encoding";
+@@ -694,6 +701,7 @@ function getProvider(name) {
+ 	switch (name) {
+ 		case "github": return github;
+ 		case "google": return google;
++		case "discord": return discord;
+ 	}
+ }
+ /**
+@@ -734,5 +742,5 @@ function auth(config) {
+ }
+ 
+ //#endregion
+-export { AuthError, InviteError, MagicLinkError, OAuthError, PasskeyAuthenticationError, PermissionError, Permissions, Role, SignupError, TOKEN_PREFIXES, VALID_SCOPES, auth, authConfigSchema, authenticateWithPasskey, canActOnOwn, canSignup, clampScopes, completeInvite, completeSignup, computeS256Challenge, createAuthorizationUrl, createInvite, createInviteToken, decrypt, encrypt, escapeHtml, findOrCreateOAuthUser, generateAuthSecret, generateAuthenticationOptions, generatePrefixedToken, generateRegistrationOptions, generateSessionId, generateToken, generateTokenWithHash, github, google, handleOAuthCallback, hasPermission, hasScope, hashPrefixedToken, hashToken, registerPasskey, requestSignup, requirePermission, requirePermissionOnResource, resolveConfig, roleFromLevel, roleToLevel, scopesForRole, secureCompare, sendMagicLink, toDeviceType, toRoleLevel, toTokenType, validateInvite, validateScopes, validateSignupToken, verifyAuthenticationResponse, verifyMagicLink, verifyRegistrationResponse };
++export { AuthError, InviteError, MagicLinkError, OAuthError, PasskeyAuthenticationError, PermissionError, Permissions, Role, SignupError, TOKEN_PREFIXES, VALID_SCOPES, auth, authConfigSchema, authenticateWithPasskey, canActOnOwn, canSignup, checkDiscordGuild, clampScopes, completeInvite, completeSignup, computeS256Challenge, createAuthorizationUrl, createInvite, createInviteToken, decrypt, discord, encrypt, escapeHtml, findOrCreateOAuthUser, generateAuthSecret, generateAuthenticationOptions, generatePrefixedToken, generateRegistrationOptions, generateSessionId, generateToken, generateTokenWithHash, github, google, handleOAuthCallback, hasPermission, hasScope, hashPrefixedToken, hashToken, registerPasskey, requestSignup, requirePermission, requirePermissionOnResource, resolveConfig, roleFromLevel, roleToLevel, scopesForRole, secureCompare, sendMagicLink, toDeviceType, toRoleLevel, toTokenType, validateInvite, validateScopes, validateSignupToken, verifyAuthenticationResponse, verifyMagicLink, verifyRegistrationResponse };
+ //# sourceMappingURL=index.mjs.map
+\ No newline at end of file

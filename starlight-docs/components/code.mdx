@@ -1,0 +1,48 @@
+---
+title: Code
+description: Display syntax-highlighted code blocks.
+---
+
+Code blocks render syntax-highlighted code using [Expressive Code](https://expressive-code.com/) with bundled Night Owl dark and light themes.
+
+## Block type
+
+`code`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `language` | string | Language identifier (e.g. `ts`, `bash`, `json`, `css`) |
+| `code` | string | The code content |
+
+## Markdown mode
+
+In markdown mode, code blocks use standard fenced code block syntax:
+
+````markdown
+```ts
+const greeting = "Hello, Star-Lite!";
+console.log(greeting);
+```
+````
+
+The language identifier after the opening fence determines syntax highlighting.
+
+## Supported languages
+
+Expressive Code supports all languages that Shiki supports, including: `ts`, `js`, `tsx`, `jsx`, `html`, `css`, `json`, `bash`, `sh`, `yaml`, `md`, `mdx`, `sql`, `python`, `rust`, `go`, `java`, `c`, `cpp`, and many more.
+
+## Themes
+
+Star-Lite bundles Night Owl dark and light themes by default. You can customize this via the `expressiveCode` option in [configuration](/reference/configuration):
+
+```ts
+starLiteDocs({
+  expressiveCode: {
+    themes: ["dracula", "github-light"],
+  },
+});
+```
+
+Set `expressiveCode: false` to disable the bundled integration entirely.

@@ -1,0 +1,41 @@
+---
+title: Tabs
+description: Display content in tabbed panels.
+---
+
+Tabs group equivalent content into switchable panels — useful when showing the same task across different tools, languages, or platforms.
+
+## Block type
+
+`star-lite.tabs`
+
+## Fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | string | Optional section ID |
+| `tabsJson` | string | JSON array of `{ label, icon, content }` objects |
+
+## Format
+
+Each tab has a label (shown in the tab bar) and content (shown in the panel):
+
+```json
+[
+  { "label": "npm", "content": "```bash\nnpm install star-lite-docs\n```" },
+  { "label": "pnpm", "content": "```bash\npnpm add star-lite-docs\n```" },
+  { "label": "bun", "content": "```bash\nbun add star-lite-docs\n```" }
+]
+```
+
+Tabs can optionally include an `icon` field with an icon name from the [icon set](/reference/icons).
+
+## Usage
+
+Add a tabs block from the admin block picker and enter the tabs JSON. The first tab is selected by default.
+
+Common use cases:
+
+- Package manager commands (npm / pnpm / yarn / bun)
+- Code examples in different languages
+- Platform-specific instructions (macOS / Linux / Windows)

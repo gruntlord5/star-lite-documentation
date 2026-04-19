@@ -1,0 +1,51 @@
+---
+title: Site Search
+description: How search works in Star-Lite Docs.
+---
+
+Star-Lite Docs includes built-in search powered by a `/api/search` endpoint that queries the database directly.
+
+## Ctrl+K search modal
+
+Press **Ctrl+K** (or **Cmd+K** on Mac) to open the search modal. Type at least 2 characters to search across all published pages by title and content.
+
+Results show the page title, a snippet with the matched text highlighted, and link to the page.
+
+## How it works
+
+The search endpoint queries the `ec_pages` table using SQL `LIKE` patterns:
+
+1. Filters to published, non-deleted pages
+2. Matches the query against `title` and `content` columns
+3. Returns up to 10 results
+4. Extracts a text snippet from Portable Text blocks with `<mark>` highlighting around the matched term
+
+This is a simple substring search — there's no full-text search indexing, stemming, or ranking. It works well for small to medium documentation sites.
+
+## Search API
+
+The endpoint is public (no authentication required) and returns JSON:
+
+```
+GET /api/search?q=sidebar
+```
+
+```json
+{
+  "results": [
+    {
+      "slug": "guides/sidebar",
+      "title": "Sidebar Navigation",
+      "snippet": "...edit the <mark>sidebar</mark> from the admin UI..."
+    }
+  ]
+}
+```
+
+Queries shorter than 2 characters return an empty results array.
+
+## FTS and the drop-fts endpoint
+
+Star-Lite includes a `POST /api/drop-fts` endpoint that drops SQLite full-text search indexes and triggers on the pages table. This is called automatically before every save operation to prevent FTS index corruption when content is updated.
+
+The `/api/search` endpoint uses `LIKE` queries directly, so search continues to work regardless of FTS state.

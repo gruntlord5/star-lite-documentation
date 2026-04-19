@@ -1,0 +1,39 @@
+diff --git a/shim/index.js b/shim/index.js
+index 974854c2cd8ad8adc102db0c12a3880c41ee2529..74eb733c1b50b5a0fea96234d6a607973a41dc0c 100644
+--- a/shim/index.js
++++ b/shim/index.js
+@@ -1,7 +1,2 @@
+-'use strict';
+-
+-if (process.env.NODE_ENV === 'production') {
+-  module.exports = require('../cjs/use-sync-external-store-shim.production.js');
+-} else {
+-  module.exports = require('../cjs/use-sync-external-store-shim.development.js');
+-}
++import { useSyncExternalStore } from 'react';
++export { useSyncExternalStore };
+diff --git a/shim/with-selector.js b/shim/with-selector.js
+index 91859dbd47282b19308a9b52e4afb897167ad0ec..042d08ba67100243dfd8891dd4ac4ac7ca24c787 100644
+--- a/shim/with-selector.js
++++ b/shim/with-selector.js
+@@ -1,7 +1,15 @@
+-'use strict';
++import { useSyncExternalStore, useRef, useCallback, useMemo } from 'react';
+ 
+-if (process.env.NODE_ENV === 'production') {
+-  module.exports = require('../cjs/use-sync-external-store-shim/with-selector.production.js');
+-} else {
+-  module.exports = require('../cjs/use-sync-external-store-shim/with-selector.development.js');
++export function useSyncExternalStoreWithSelector(subscribe, getSnapshot, getServerSnapshot, selector, isEqual) {
++  const prevRef = useRef(null);
++  const select = useCallback((snapshot) => {
++    const next = selector(snapshot);
++    const prev = prevRef.current;
++    if (prev !== null && isEqual ? isEqual(prev, next) : prev === next) return prev;
++    prevRef.current = next;
++    return next;
++  }, [selector, isEqual]);
++  const getSelection = useMemo(() => () => select(getSnapshot()), [getSnapshot, select]);
++  const getServerSelection = useMemo(() => getServerSnapshot ? () => select(getServerSnapshot()) : undefined, [getServerSnapshot, select]);
++  return useSyncExternalStore(subscribe, getSelection, getServerSelection);
+ }
