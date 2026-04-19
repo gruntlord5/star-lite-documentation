@@ -1,0 +1,20 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "star-lite-documentation",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "star-lite-documentation",
+			// Run `wrangler d1 create my-docs` and paste the real ID here for deploy
+			"database_id": "e0b3e3e7-8705-490b-8b2b-20a94b4d39dc"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "star-lite-documentation-media","preview_bucket_name": "star-lite-documentation-media"
+		}
+	]
+}
